@@ -1,0 +1,108 @@
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+class Question {
+    private String questionText;
+    private String[] options;
+    private int correctAnswerIndex;
+
+    public Question(String questionText, String[] options, int correctAnswerIndex) {
+        this.questionText = questionText;
+        this.options = options;
+        this.correctAnswerIndex = correctAnswerIndex;
+    }
+
+    public String getQuestionText() {
+        return questionText;
+    }
+
+    public String[] getOptions() {
+        return options;
+    }
+
+    public boolean isCorrectAnswer(int answerIndex) {
+        return answerIndex == correctAnswerIndex;
+    }
+}
+
+class Quiz {
+    private List<Question> questions;
+    private int score;
+
+    public Quiz() {
+        questions = new ArrayList<>();
+        score = 0;
+        loadQuestions();
+    }
+
+    private void loadQuestions() {
+        questions.add(new Question("What is the derivative of sin(x)?", new String[]{"1. cos(x)", "2. -sin(x)", "3. tan(x)", "4. sec^2(x)"}, 0));
+        questions.add(new Question("What is the value of the integral ∫ x^2 dx?", new String[]{"1. (1/3)x^3 + C", "2. (1/2)x^2 + C", "3. x^3 + C", "4. x^2 + C"}, 0));
+        questions.add(new Question("What is the capital of Mongolia?", new String[]{"1. Ulaanbaatar", "2. Astana", "3. Tashkent", "4. Bishkek"}, 0));
+        questions.add(new Question("Which element has the highest electronegativity?", new String[]{"1. Fluorine", "2. Oxygen", "3. Chlorine", "4. Nitrogen"}, 0));
+        questions.add(new Question("What is the Pythagorean theorem?", new String[]{"1. a^2 + b^2 = c^2", "2. a + b = c", "3. a^2 - b^2 = c^2", "4. a^2 + b^2 = 2c"}, 0));
+    }
+
+    public void start() {
+        Scanner sc = new Scanner(System.in);
+        for (int i = 0; i < questions.size(); i++) {
+            Question question = questions.get(i);
+            System.out.println("Question " + (i + 1) + ": " + question.getQuestionText());
+            String[] options = question.getOptions();
+            for (String option : options) {
+                System.out.println(option);
+            }
+
+            int answer = getAnswerWithTimer(sc);
+            if (answer != -1 && question.isCorrectAnswer(answer)) {
+                score++;
+            }
+        }
+        displayResult();
+    }
+
+    private int getAnswerWithTimer(Scanner sc) {
+        final int[] answer = {-1};
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("\nTime's up!");
+                sc.nextLine(); // Consume the input to prevent blocking
+            }
+        }, 10000); // 10 seconds timer
+
+        System.out.print("Your answer (0-3): ");
+        while (true) {
+            if (sc.hasNextInt()) {
+                answer[0] = sc.nextInt();
+                if (answer[0] >= 0 && answer[0] < 4) {
+                    timer.cancel();
+                    return answer[0];
+                } else {
+                    System.out.print("Invalid option. Please enter a number between 0 and 3: ");
+                }
+            } else {
+                System.out.print("Invalid input. Please enter a number between 0 and 3: ");
+                sc.next(); // Clear invalid input
+            }
+        }
+    }
+
+    private void displayResult() {
+        System.out.println("\nQuiz Finished!");
+        System.out.println("Your score: " + score + "/" + questions.size());
+        System.out.println("Correct answers: " + score);
+        System.out.println("Incorrect answers: " + (questions.size() - score));
+    }
+}
+
+public class QuizApp {
+    public static void main(String[] args) {
+        Quiz quiz = new Quiz();
+        quiz.start();
+    }
+}
